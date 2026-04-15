@@ -398,7 +398,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		_board.move(Vector2i.DOWN)
 
 
-func _unhandled_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
 	# Handle touch events (native mobile)
 	if event is InputEventScreenTouch:
 		var touch := event as InputEventScreenTouch
