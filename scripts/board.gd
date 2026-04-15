@@ -33,6 +33,7 @@ var _slot_styles:    Array[StyleBoxFlat] = []
 func _ready() -> void:
 	custom_minimum_size = Vector2(BOARD_SIZE, BOARD_SIZE)
 	size = Vector2(BOARD_SIZE, BOARD_SIZE)
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	_tile_scene = load("res://scenes/tile.tscn")
 
@@ -46,6 +47,7 @@ func _ready() -> void:
 func _build_background() -> void:
 	var bg := Panel.new()
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	_bg_style = StyleBoxFlat.new()
 	_bg_style.bg_color = C_BOARD_BG
@@ -70,6 +72,7 @@ func _build_cell_slots() -> void:
 			var slot := Panel.new()
 			slot.position = _cell_pixel_pos(Vector2i(col, row))
 			slot.size = Vector2(CELL_SIZE, CELL_SIZE)
+			slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			var s := slot_style_proto.duplicate() as StyleBoxFlat
 			slot.add_theme_stylebox_override("panel", s)
 			_slot_styles.append(s)

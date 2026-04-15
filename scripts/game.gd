@@ -71,6 +71,7 @@ var _score_lbl_labels:  Array[Label] = []   # "SCORE", "BEST" caption labels
 var _dim_rect:      ColorRect
 var _overlay_box_style: StyleBoxFlat
 var _toggle_btn:    Button
+var _restart_btn:   Button
 
 # ── Audio ─────────────────────────────────────────────────────────────────────
 var _sfx_slide:     AudioStreamPlayer
@@ -240,6 +241,18 @@ func _add_footer() -> void:
 	_toggle_btn.pressed.connect(_on_toggle_dark_mode)
 	add_child(_toggle_btn)
 
+	# Restart button — next to toggle
+	_restart_btn = Button.new()
+	_restart_btn.text = "↻"
+	_restart_btn.custom_minimum_size = Vector2(40, 32)
+	_restart_btn.position = Vector2(SIDE_MARGIN + Board.BOARD_SIZE - 84, board_bottom + 16)
+	_restart_btn.add_theme_font_size_override("font_size", 22)
+	for state: String in ["normal", "hover", "pressed"]:
+		_restart_btn.add_theme_stylebox_override(state, StyleBoxEmpty.new())
+	_restart_btn.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	_restart_btn.pressed.connect(_on_restart_pressed)
+	add_child(_restart_btn)
+
 
 func _add_overlay() -> void:
 	_overlay = Control.new()
@@ -342,9 +355,10 @@ func _apply_palette() -> void:
 	_sub_label.add_theme_color_override("font_color", p.subtitle)
 	_hint_label.add_theme_color_override("font_color", p.hint)
 
-	# Toggle button
+	# Toggle & restart buttons
 	for color_name: String in ["font_color", "font_hover_color", "font_pressed_color"]:
 		_toggle_btn.add_theme_color_override(color_name, p.toggle_text)
+		_restart_btn.add_theme_color_override(color_name, p.toggle_text)
 
 	# Overlay
 	_dim_rect.color = p.overlay_dim

@@ -43,6 +43,7 @@ func _ready() -> void:
 	custom_minimum_size = Vector2(CELL_SIZE, CELL_SIZE)
 	size = Vector2(CELL_SIZE, CELL_SIZE)
 	pivot_offset = Vector2(CELL_SIZE * 0.5, CELL_SIZE * 0.5)
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	_bg_style = StyleBoxFlat.new()
 	_bg_style.corner_radius_top_left    = 6
