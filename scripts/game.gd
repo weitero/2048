@@ -35,6 +35,12 @@ var _overlay_btn:       Button
 var _keep_playing_btn:  Button
 var _board:             Board
 
+# ── Audio ─────────────────────────────────────────────────────────────────────
+var _sfx_slide:     AudioStreamPlayer
+var _sfx_merge:     AudioStreamPlayer
+var _sfx_game_over: AudioStreamPlayer
+var _sfx_win:       AudioStreamPlayer
+
 const SAVE_PATH    := "user://save.cfg"
 const SAVE_SECTION := "scores"
 
@@ -45,6 +51,8 @@ var _best_score:    int = 0
 func _ready() -> void:
 	_best_score = _load_best_score()
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	#_apply_font_theme()
+	_add_audio()
 	_add_background()
 	_add_header()
 	_add_board()
@@ -53,6 +61,21 @@ func _ready() -> void:
 	# Sync best label now that _best_label node exists
 	if _best_score > 0:
 		_best_label.text = str(_best_score)
+
+
+func _add_audio() -> void:
+	_sfx_slide     = _make_sfx_player("res://assets/slide.wav")
+	_sfx_merge     = _make_sfx_player("res://assets/merge.wav")
+	_sfx_game_over = _make_sfx_player("res://assets/game_over.wav")
+	_sfx_win       = _make_sfx_player("res://assets/win.wav")
+
+
+func _make_sfx_player(path: String) -> AudioStreamPlayer:
+	var player := AudioStreamPlayer.new()
+	player.stream = load(path)
+	player.bus = "Master"
+	add_child(player)
+	return player
 
 
 # ── UI construction ───────────────────────────────────────────────────────────
@@ -138,6 +161,7 @@ func _add_board() -> void:
 	_board.position = Vector2(SIDE_MARGIN, BOARD_Y)
 	add_child(_board)
 
+	_board.tiles_moved.connect(_on_tiles_moved)
 	_board.score_changed.connect(_on_score_changed)
 	_board.game_over.connect(_on_game_over)
 	_board.game_won.connect(_on_game_won)
@@ -263,9 +287,14 @@ func _unhandled_key_input(event: InputEvent) -> void:
 
 # ── Signal handlers ───────────────────────────────────────────────────────────
 
+func _on_tiles_moved() -> void:
+	_sfx_slide.play()
+
+
 func _on_score_changed(delta: int) -> void:
 	_current_score += delta
 	_score_label.text = str(_current_score)
+	_sfx_merge.play()
 	if _current_score > _best_score:
 		_best_score = _current_score
 		_best_label.text = str(_best_score)
@@ -277,6 +306,7 @@ func _on_game_over() -> void:
 	_keep_playing_btn.visible = false
 	_overlay.visible = true
 	_overlay_btn.grab_focus()
+	_sfx_game_over.play()
 
 
 func _on_game_won() -> void:
@@ -284,6 +314,7 @@ func _on_game_won() -> void:
 	_keep_playing_btn.visible = true
 	_overlay.visible = true
 	_keep_playing_btn.grab_focus()
+	_sfx_win.play()
 
 
 func _on_keep_playing_pressed() -> void:

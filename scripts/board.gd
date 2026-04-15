@@ -12,6 +12,7 @@ const C_BOARD_BG  := Color("#bbada0")
 const C_CELL_SLOT := Color("#cdc1b4")
 
 signal score_changed(delta: int)
+signal tiles_moved
 signal game_over
 signal game_won
 
@@ -137,6 +138,8 @@ func move(direction: Vector2i) -> void:
 	if not board_changed:
 		return
 
+	tiles_moved.emit()
+
 	if total_score > 0:
 		score_changed.emit(total_score)
 
@@ -242,10 +245,11 @@ func _run_animation(all_moves: Array, all_merges: Array) -> void:
 			new_tile_nodes[pos] = _tile_nodes[pos]
 
 	# Simple slides
+	var tweens: Array[Tween] = []
 	for m in all_moves:
 		var tile: Tile = _tile_nodes[m.from]
 		tile.grid_pos = m.to
-		tile.slide_to(_cell_pixel_pos(m.to))
+		tweens.append(tile.slide_to(_cell_pixel_pos(m.to)))
 		new_tile_nodes[m.to] = tile
 
 	# Merge slides: both tiles travel to the destination
@@ -254,16 +258,17 @@ func _run_animation(all_moves: Array, all_merges: Array) -> void:
 		var loser:  Tile = _tile_nodes[mg.from_b]
 		var dest_px := _cell_pixel_pos(mg.to)
 		winner.grid_pos = mg.to
-		winner.slide_to(dest_px)
-		loser.slide_to(dest_px)
+		tweens.append(winner.slide_to(dest_px))
+		tweens.append(loser.slide_to(dest_px))
 		losers.append(loser)
 		winners.append({"tile": winner, "value": mg.value, "gpos": mg.to})
 		new_tile_nodes[mg.to] = winner
 
 	_tile_nodes = new_tile_nodes
 
-	# Wait for slides to finish (~100 ms tween + small buffer)
-	await get_tree().create_timer(0.13).timeout
+	# Wait for all slide tweens to finish
+	if not tweens.is_empty():
+		await tweens.back().finished
 	if not is_inside_tree() or _anim_gen != gen:
 		_is_animating = false
 		return
