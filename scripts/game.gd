@@ -49,6 +49,7 @@ var _best_score:    int = 0
 
 
 func _ready() -> void:
+	DisplayServer.window_set_min_size(Vector2i(270, 360))  # half design resolution
 	_best_score = _load_best_score()
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	#_apply_font_theme()
