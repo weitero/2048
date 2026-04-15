@@ -31,6 +31,7 @@ var _score_label:   Label
 var _best_label:    Label
 var _overlay:       Control
 var _overlay_msg:   Label
+var _overlay_btn:   Button
 var _board:         Board
 
 const SAVE_PATH    := "user://save.cfg"
@@ -201,12 +202,12 @@ func _add_overlay() -> void:
 	_overlay_msg.add_theme_color_override("font_color", C_OVERLAY_TXT)
 	vbox.add_child(_overlay_msg)
 
-	var btn := Button.new()
-	btn.text = "Try Again"
-	btn.custom_minimum_size = Vector2(130, 46)
-	_style_button(btn)
-	btn.pressed.connect(_on_restart_pressed)
-	vbox.add_child(btn)
+	_overlay_btn = Button.new()
+	_overlay_btn.text = "Try Again"
+	_overlay_btn.custom_minimum_size = Vector2(130, 46)
+	_style_button(_overlay_btn)
+	_overlay_btn.pressed.connect(_on_restart_pressed)
+	vbox.add_child(_overlay_btn)
 
 
 func _style_button(btn: Button) -> void:
@@ -259,11 +260,13 @@ func _on_score_changed(delta: int) -> void:
 func _on_game_over() -> void:
 	_overlay_msg.text = "Game Over!"
 	_overlay.visible = true
+	_overlay_btn.grab_focus()
 
 
 func _on_game_won() -> void:
 	_overlay_msg.text = "You Win!"
 	_overlay.visible = true
+	_overlay_btn.grab_focus()
 
 
 func _on_restart_pressed() -> void:
