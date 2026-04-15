@@ -31,8 +31,9 @@ var _score_label:   Label
 var _best_label:    Label
 var _overlay:       Control
 var _overlay_msg:   Label
-var _overlay_btn:   Button
-var _board:         Board
+var _overlay_btn:       Button
+var _keep_playing_btn:  Button
+var _board:             Board
 
 const SAVE_PATH    := "user://save.cfg"
 const SAVE_SECTION := "scores"
@@ -175,7 +176,7 @@ func _add_overlay() -> void:
 	_overlay.add_child(dim)
 
 	# Centred message box
-	const BOX_SIZE := Vector2(300, 170)
+	const BOX_SIZE := Vector2(300, 180)
 	var box := Panel.new()
 	box.size = BOX_SIZE
 	box.position = (Vector2(WINDOW_W, WINDOW_H) - BOX_SIZE) / 2.0
@@ -202,12 +203,26 @@ func _add_overlay() -> void:
 	_overlay_msg.add_theme_color_override("font_color", C_OVERLAY_TXT)
 	vbox.add_child(_overlay_msg)
 
+	# Button row — holds "Keep Playing" (win only) and "Try Again"
+	var btn_row := HBoxContainer.new()
+	btn_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	btn_row.add_theme_constant_override("separation", 10)
+	vbox.add_child(btn_row)
+
+	_keep_playing_btn = Button.new()
+	_keep_playing_btn.text = "Keep Playing"
+	_keep_playing_btn.custom_minimum_size = Vector2(130, 46)
+	_style_button(_keep_playing_btn)
+	_keep_playing_btn.pressed.connect(_on_keep_playing_pressed)
+	_keep_playing_btn.visible = false
+	btn_row.add_child(_keep_playing_btn)
+
 	_overlay_btn = Button.new()
 	_overlay_btn.text = "Try Again"
 	_overlay_btn.custom_minimum_size = Vector2(130, 46)
 	_style_button(_overlay_btn)
 	_overlay_btn.pressed.connect(_on_restart_pressed)
-	vbox.add_child(_overlay_btn)
+	btn_row.add_child(_overlay_btn)
 
 
 func _style_button(btn: Button) -> void:
@@ -259,14 +274,20 @@ func _on_score_changed(delta: int) -> void:
 
 func _on_game_over() -> void:
 	_overlay_msg.text = "Game Over!"
+	_keep_playing_btn.visible = false
 	_overlay.visible = true
 	_overlay_btn.grab_focus()
 
 
 func _on_game_won() -> void:
 	_overlay_msg.text = "You Win!"
+	_keep_playing_btn.visible = true
 	_overlay.visible = true
-	_overlay_btn.grab_focus()
+	_keep_playing_btn.grab_focus()
+
+
+func _on_keep_playing_pressed() -> void:
+	_overlay.visible = false
 
 
 func _on_restart_pressed() -> void:
