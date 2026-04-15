@@ -7,19 +7,25 @@ extends Control
 # Must stay in sync with Board.CELL_SIZE
 const CELL_SIZE := 107
 
-# Classic 2048 color palette
+# Classic 2048 color palette + super-tile colors
 const TILE_COLORS: Dictionary = {
-	2:    Color("#eee4da"),
-	4:    Color("#ede0c8"),
-	8:    Color("#f2b179"),
-	16:   Color("#f59563"),
-	32:   Color("#f67c5f"),
-	64:   Color("#f65e3b"),
-	128:  Color("#edcf72"),
-	256:  Color("#edcc61"),
-	512:  Color("#edc850"),
-	1024: Color("#edc53f"),
-	2048: Color("#edc22e"),
+	2:     Color("#eee4da"),
+	4:     Color("#ede0c8"),
+	8:     Color("#f2b179"),
+	16:    Color("#f59563"),
+	32:    Color("#f67c5f"),
+	64:    Color("#f65e3b"),
+	128:   Color("#edcf72"),
+	256:   Color("#edcc61"),
+	512:   Color("#edc850"),
+	1024:  Color("#edc53f"),
+	2048:  Color("#edc22e"),
+	4096:  Color("#b784ab"),
+	8192:  Color("#a566a0"),
+	16384: Color("#934b95"),
+	32768: Color("#6d35a0"),
+	65536: Color("#4a1a8a"),
+	131072: Color("#2d0f5e"),
 }
 
 const C_DARK_TEXT  := Color("#776e65")  # used for values 2 and 4
