@@ -86,6 +86,11 @@ var _best_score:    int  = 0
 var _dark_mode:     bool = false
 var _palette:       Dictionary = PALETTE_LIGHT
 
+# ── Touch / swipe ─────────────────────────────────────────────────────────────
+const SWIPE_MIN_DIST := 30.0  # minimum px distance to register a swipe
+var _touch_start: Vector2 = Vector2.ZERO
+var _is_touching: bool = false
+
 
 func _ready() -> void:
 	DisplayServer.window_set_min_size(Vector2i(270, 360))  # half design resolution
@@ -379,6 +384,24 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		_board.move(Vector2i.DOWN)
 
 
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventScreenTouch:
+		var touch := event as InputEventScreenTouch
+		if touch.pressed:
+			_touch_start = touch.position
+			_is_touching = true
+		elif _is_touching:
+			_is_touching = false
+			if _overlay.visible:
+				return
+			var delta := touch.position - _touch_start
+			if delta.length() < SWIPE_MIN_DIST:
+				return
+			# Determine primary axis
+			if absf(delta.x) > absf(delta.y):
+				_board.move(Vector2i.RIGHT if delta.x > 0 else Vector2i.LEFT)
+			else:
+				_board.move(Vector2i.DOWN if delta.y > 0 else Vector2i.UP)
 # ── Signal handlers ───────────────────────────────────────────────────────────
 
 func _on_tiles_moved() -> void:
