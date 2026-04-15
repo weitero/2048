@@ -26,6 +26,9 @@ var _is_animating:   bool = false
 var _game_won_fired: bool = false
 var _anim_gen:       int  = 0  # incremented on restart to cancel stale coroutines
 
+var _bg_style:       StyleBoxFlat
+var _slot_styles:    Array[StyleBoxFlat] = []
+
 
 func _ready() -> void:
 	custom_minimum_size = Vector2(BOARD_SIZE, BOARD_SIZE)
@@ -44,13 +47,13 @@ func _build_background() -> void:
 	var bg := Panel.new()
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
-	var style := StyleBoxFlat.new()
-	style.bg_color = C_BOARD_BG
-	style.corner_radius_top_left     = 8
-	style.corner_radius_top_right    = 8
-	style.corner_radius_bottom_left  = 8
-	style.corner_radius_bottom_right = 8
-	bg.add_theme_stylebox_override("panel", style)
+	_bg_style = StyleBoxFlat.new()
+	_bg_style.bg_color = C_BOARD_BG
+	_bg_style.corner_radius_top_left     = 8
+	_bg_style.corner_radius_top_right    = 8
+	_bg_style.corner_radius_bottom_left  = 8
+	_bg_style.corner_radius_bottom_right = 8
+	bg.add_theme_stylebox_override("panel", _bg_style)
 	add_child(bg)
 
 
@@ -67,7 +70,9 @@ func _build_cell_slots() -> void:
 			var slot := Panel.new()
 			slot.position = _cell_pixel_pos(Vector2i(col, row))
 			slot.size = Vector2(CELL_SIZE, CELL_SIZE)
-			slot.add_theme_stylebox_override("panel", slot_style_proto.duplicate())
+			var s := slot_style_proto.duplicate() as StyleBoxFlat
+			slot.add_theme_stylebox_override("panel", s)
+			_slot_styles.append(s)
 			add_child(slot)
 
 
@@ -80,6 +85,13 @@ func _cell_pixel_pos(gpos: Vector2i) -> Vector2:
 
 
 # ── Public API ────────────────────────────────────────────────────────────────
+
+# Update board and cell slot colors (called by Game when theme changes)
+func apply_colors(board_bg: Color, cell_slot: Color) -> void:
+	if _bg_style:
+		_bg_style.bg_color = board_bg
+	for s in _slot_styles:
+		s.bg_color = cell_slot
 
 # Reset the board and spawn two starting tiles
 func start_game() -> void:

@@ -11,20 +11,46 @@ const TOP_MARGIN  := 20
 const HEADER_H    := 80
 const BOARD_Y     := TOP_MARGIN + HEADER_H + 20  # 120
 
-# ── Colors ────────────────────────────────────────────────────────────────────
-const C_BG          := Color("#faf8ef")
-const C_TITLE       := Color("#776e65")
-const C_SUBTITLE    := Color("#776e65")
-const C_HINT        := Color("#a09888")
-const C_SCORE_BG    := Color("#bbada0")
-const C_SCORE_LBL   := Color("#eee4da")
-const C_SCORE_VAL   := Color("#ffffff")
-const C_OVERLAY_DIM := Color(0.737, 0.706, 0.627, 0.73)  # #bbada0 @ 73 %
-const C_OVERLAY_BOX := Color("#f9f6f2")
-const C_BTN_NORMAL  := Color("#8f7a66")
-const C_BTN_HOVER   := Color("#9f8b77")
-const C_BTN_PRESSED := Color("#7f6a56")
-const C_OVERLAY_TXT := Color("#776e65")
+# ── Color Palettes ────────────────────────────────────────────────────────────
+const PALETTE_LIGHT := {
+	"bg":          Color("#faf8ef"),
+	"title":       Color("#776e65"),
+	"subtitle":    Color("#776e65"),
+	"hint":        Color("#a09888"),
+	"score_bg":    Color("#bbada0"),
+	"score_lbl":   Color("#eee4da"),
+	"score_val":   Color("#ffffff"),
+	"overlay_dim": Color(0.737, 0.706, 0.627, 0.73),
+	"overlay_box": Color("#f9f6f2"),
+	"btn_normal":  Color("#8f7a66"),
+	"btn_hover":   Color("#9f8b77"),
+	"btn_pressed": Color("#7f6a56"),
+	"btn_text":    Color("#f9f6f2"),
+	"overlay_txt": Color("#776e65"),
+	"board_bg":    Color("#bbada0"),
+	"cell_slot":   Color("#cdc1b4"),
+	"toggle_text": Color("#a09888"),
+}
+
+const PALETTE_DARK := {
+	"bg":          Color("#1a1a2e"),
+	"title":       Color("#e8e0d8"),
+	"subtitle":    Color("#b0a8a0"),
+	"hint":        Color("#706868"),
+	"score_bg":    Color("#2a2a42"),
+	"score_lbl":   Color("#8080a0"),
+	"score_val":   Color("#f0f0f0"),
+	"overlay_dim": Color(0.06, 0.06, 0.12, 0.82),
+	"overlay_box": Color("#262640"),
+	"btn_normal":  Color("#4a4a6e"),
+	"btn_hover":   Color("#5a5a80"),
+	"btn_pressed": Color("#3a3a5e"),
+	"btn_text":    Color("#e8e0d8"),
+	"overlay_txt": Color("#e8e0d8"),
+	"board_bg":    Color("#2a2a42"),
+	"cell_slot":   Color("#363656"),
+	"toggle_text": Color("#706868"),
+}
 
 # ── Node refs ─────────────────────────────────────────────────────────────────
 var _score_label:   Label
@@ -35,6 +61,17 @@ var _overlay_btn:       Button
 var _keep_playing_btn:  Button
 var _board:             Board
 
+# Refs for theme recoloring
+var _bg_rect:       ColorRect
+var _title_label:   Label
+var _sub_label:     Label
+var _hint_label:    Label
+var _score_box_styles:  Array[StyleBoxFlat] = []
+var _score_lbl_labels:  Array[Label] = []   # "SCORE", "BEST" caption labels
+var _dim_rect:      ColorRect
+var _overlay_box_style: StyleBoxFlat
+var _toggle_btn:    Button
+
 # ── Audio ─────────────────────────────────────────────────────────────────────
 var _sfx_slide:     AudioStreamPlayer
 var _sfx_merge:     AudioStreamPlayer
@@ -44,21 +81,25 @@ var _sfx_win:       AudioStreamPlayer
 const SAVE_PATH    := "user://save.cfg"
 const SAVE_SECTION := "scores"
 
-var _current_score: int = 0
-var _best_score:    int = 0
+var _current_score: int  = 0
+var _best_score:    int  = 0
+var _dark_mode:     bool = false
+var _palette:       Dictionary = PALETTE_LIGHT
 
 
 func _ready() -> void:
 	DisplayServer.window_set_min_size(Vector2i(270, 360))  # half design resolution
 	_best_score = _load_best_score()
+	_dark_mode  = _load_dark_mode()
+	_palette    = PALETTE_DARK if _dark_mode else PALETTE_LIGHT
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	#_apply_font_theme()
 	_add_audio()
 	_add_background()
 	_add_header()
 	_add_board()
 	_add_footer()
 	_add_overlay()
+	_apply_palette()
 	# Sync best label now that _best_label node exists
 	if _best_score > 0:
 		_best_label.text = str(_best_score)
@@ -82,10 +123,9 @@ func _make_sfx_player(path: String) -> AudioStreamPlayer:
 # ── UI construction ───────────────────────────────────────────────────────────
 
 func _add_background() -> void:
-	var bg := ColorRect.new()
-	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	bg.color = C_BG
-	add_child(bg)
+	_bg_rect = ColorRect.new()
+	_bg_rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(_bg_rect)
 
 
 func _add_header() -> void:
@@ -95,13 +135,12 @@ func _add_header() -> void:
 	add_child(header)
 
 	# "2048" title — left side
-	var title := Label.new()
-	title.text = "2048"
-	title.size = Vector2(180, HEADER_H)
-	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 64)
-	title.add_theme_color_override("font_color", C_TITLE)
-	header.add_child(title)
+	_title_label = Label.new()
+	_title_label.text = "2048"
+	_title_label.size = Vector2(180, HEADER_H)
+	_title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_title_label.add_theme_font_size_override("font_size", 64)
+	header.add_child(_title_label)
 
 	# Score boxes — right side, vertically centred
 	const SCORES_W := 111 * 2 + 8  # two 111 px boxes + 8 px gap = 230
@@ -125,12 +164,12 @@ func _make_score_box(title: String) -> Panel:
 	panel.custom_minimum_size = Vector2(111, 58)
 
 	var style := StyleBoxFlat.new()
-	style.bg_color = C_SCORE_BG
 	style.corner_radius_top_left     = 4
 	style.corner_radius_top_right    = 4
 	style.corner_radius_bottom_left  = 4
 	style.corner_radius_bottom_right = 4
 	panel.add_theme_stylebox_override("panel", style)
+	_score_box_styles.append(style)
 
 	var vbox := VBoxContainer.new()
 	vbox.name = "VBox"
@@ -143,15 +182,14 @@ func _make_score_box(title: String) -> Panel:
 	lbl.text = title
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lbl.add_theme_font_size_override("font_size", 11)
-	lbl.add_theme_color_override("font_color", C_SCORE_LBL)
 	vbox.add_child(lbl)
+	_score_lbl_labels.append(lbl)
 
 	var val := Label.new()
 	val.name = "Value"
 	val.text = "0"
 	val.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	val.add_theme_font_size_override("font_size", 22)
-	val.add_theme_color_override("font_color", C_SCORE_VAL)
 	vbox.add_child(val)
 
 	return panel
@@ -172,19 +210,30 @@ func _add_board() -> void:
 func _add_footer() -> void:
 	var board_bottom := BOARD_Y + Board.BOARD_SIZE
 
-	var sub := Label.new()
-	sub.text = "Join the tiles, get to 2048!"
-	sub.position = Vector2(SIDE_MARGIN, board_bottom + 16)
-	sub.add_theme_font_size_override("font_size", 16)
-	sub.add_theme_color_override("font_color", C_SUBTITLE)
-	add_child(sub)
+	_sub_label = Label.new()
+	_sub_label.text = "Join the tiles, get to 2048!"
+	_sub_label.position = Vector2(SIDE_MARGIN, board_bottom + 16)
+	_sub_label.add_theme_font_size_override("font_size", 16)
+	add_child(_sub_label)
 
-	var hint := Label.new()
-	hint.text = "← → ↑ ↓  to move  ·  R  to restart"
-	hint.position = Vector2(SIDE_MARGIN, board_bottom + 42)
-	hint.add_theme_font_size_override("font_size", 14)
-	hint.add_theme_color_override("font_color", C_HINT)
-	add_child(hint)
+	_hint_label = Label.new()
+	_hint_label.text = "← → ↑ ↓  to move  ·  R  to restart"
+	_hint_label.position = Vector2(SIDE_MARGIN, board_bottom + 42)
+	_hint_label.add_theme_font_size_override("font_size", 14)
+	add_child(_hint_label)
+
+	# Dark/light mode toggle — right side of footer
+	_toggle_btn = Button.new()
+	_toggle_btn.text = "🌙" if not _dark_mode else "☀️"
+	_toggle_btn.custom_minimum_size = Vector2(40, 32)
+	_toggle_btn.position = Vector2(SIDE_MARGIN + Board.BOARD_SIZE - 40, board_bottom + 16)
+	_toggle_btn.add_theme_font_size_override("font_size", 18)
+	# Flat, borderless style
+	for state: String in ["normal", "hover", "pressed"]:
+		_toggle_btn.add_theme_stylebox_override(state, StyleBoxEmpty.new())
+	_toggle_btn.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	_toggle_btn.pressed.connect(_on_toggle_dark_mode)
+	add_child(_toggle_btn)
 
 
 func _add_overlay() -> void:
@@ -195,10 +244,9 @@ func _add_overlay() -> void:
 	add_child(_overlay)
 
 	# Semi-transparent dim layer
-	var dim := ColorRect.new()
-	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	dim.color = C_OVERLAY_DIM
-	_overlay.add_child(dim)
+	_dim_rect = ColorRect.new()
+	_dim_rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_overlay.add_child(_dim_rect)
 
 	# Centred message box
 	const BOX_SIZE := Vector2(300, 180)
@@ -206,13 +254,12 @@ func _add_overlay() -> void:
 	box.size = BOX_SIZE
 	box.position = (Vector2(WINDOW_W, WINDOW_H) - BOX_SIZE) / 2.0
 
-	var box_style := StyleBoxFlat.new()
-	box_style.bg_color = C_OVERLAY_BOX
-	box_style.corner_radius_top_left     = 8
-	box_style.corner_radius_top_right    = 8
-	box_style.corner_radius_bottom_left  = 8
-	box_style.corner_radius_bottom_right = 8
-	box.add_theme_stylebox_override("panel", box_style)
+	_overlay_box_style = StyleBoxFlat.new()
+	_overlay_box_style.corner_radius_top_left     = 8
+	_overlay_box_style.corner_radius_top_right    = 8
+	_overlay_box_style.corner_radius_bottom_left  = 8
+	_overlay_box_style.corner_radius_bottom_right = 8
+	box.add_theme_stylebox_override("panel", _overlay_box_style)
 	_overlay.add_child(box)
 
 	var vbox := VBoxContainer.new()
@@ -225,7 +272,6 @@ func _add_overlay() -> void:
 	_overlay_msg.text = "Game Over!"
 	_overlay_msg.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_overlay_msg.add_theme_font_size_override("font_size", 36)
-	_overlay_msg.add_theme_color_override("font_color", C_OVERLAY_TXT)
 	vbox.add_child(_overlay_msg)
 
 	# Button row — holds "Keep Playing" (win only) and "Try Again"
@@ -237,7 +283,6 @@ func _add_overlay() -> void:
 	_keep_playing_btn = Button.new()
 	_keep_playing_btn.text = "Keep Playing"
 	_keep_playing_btn.custom_minimum_size = Vector2(130, 46)
-	_style_button(_keep_playing_btn)
 	_keep_playing_btn.pressed.connect(_on_keep_playing_pressed)
 	_keep_playing_btn.visible = false
 	btn_row.add_child(_keep_playing_btn)
@@ -245,18 +290,18 @@ func _add_overlay() -> void:
 	_overlay_btn = Button.new()
 	_overlay_btn.text = "Try Again"
 	_overlay_btn.custom_minimum_size = Vector2(130, 46)
-	_style_button(_overlay_btn)
 	_overlay_btn.pressed.connect(_on_restart_pressed)
 	btn_row.add_child(_overlay_btn)
 
 
 func _style_button(btn: Button) -> void:
+	var p := _palette
 	for state: String in ["normal", "hover", "pressed"]:
 		var s := StyleBoxFlat.new()
 		match state:
-			"hover":    s.bg_color = C_BTN_HOVER
-			"pressed":  s.bg_color = C_BTN_PRESSED
-			_:          s.bg_color = C_BTN_NORMAL
+			"hover":    s.bg_color = p.btn_hover
+			"pressed":  s.bg_color = p.btn_pressed
+			_:          s.bg_color = p.btn_normal
 		s.corner_radius_top_left     = 4
 		s.corner_radius_top_right    = 4
 		s.corner_radius_bottom_left  = 4
@@ -265,8 +310,56 @@ func _style_button(btn: Button) -> void:
 	# Remove focus highlight ring
 	btn.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 	for color_name: String in ["font_color", "font_hover_color", "font_pressed_color"]:
-		btn.add_theme_color_override(color_name, Color("#f9f6f2"))
+		btn.add_theme_color_override(color_name, p.btn_text)
 	btn.add_theme_font_size_override("font_size", 18)
+
+
+# ── Theme / Palette ───────────────────────────────────────────────────────────
+
+func _apply_palette() -> void:
+	var p := _palette
+
+	# Background
+	_bg_rect.color = p.bg
+
+	# Header
+	_title_label.add_theme_color_override("font_color", p.title)
+
+	# Score boxes
+	for style in _score_box_styles:
+		style.bg_color = p.score_bg
+	for lbl in _score_lbl_labels:
+		lbl.add_theme_color_override("font_color", p.score_lbl)
+	_score_label.add_theme_color_override("font_color", p.score_val)
+	_best_label.add_theme_color_override("font_color", p.score_val)
+
+	# Footer
+	_sub_label.add_theme_color_override("font_color", p.subtitle)
+	_hint_label.add_theme_color_override("font_color", p.hint)
+
+	# Toggle button
+	for color_name: String in ["font_color", "font_hover_color", "font_pressed_color"]:
+		_toggle_btn.add_theme_color_override(color_name, p.toggle_text)
+
+	# Overlay
+	_dim_rect.color = p.overlay_dim
+	_overlay_box_style.bg_color = p.overlay_box
+	_overlay_msg.add_theme_color_override("font_color", p.overlay_txt)
+
+	# Buttons (restyle with current palette)
+	_style_button(_overlay_btn)
+	_style_button(_keep_playing_btn)
+
+	# Board
+	_board.apply_colors(p.board_bg, p.cell_slot)
+
+
+func _on_toggle_dark_mode() -> void:
+	_dark_mode = not _dark_mode
+	_palette   = PALETTE_DARK if _dark_mode else PALETTE_LIGHT
+	_toggle_btn.text = "☀️" if _dark_mode else "🌙"
+	_apply_palette()
+	_save_dark_mode(_dark_mode)
 
 
 # ── Input ─────────────────────────────────────────────────────────────────────
@@ -308,7 +401,7 @@ func _show_score_popup(delta: int) -> void:
 	popup.text = "+" + str(delta)
 	popup.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	popup.add_theme_font_size_override("font_size", 20)
-	popup.add_theme_color_override("font_color", C_TITLE)
+	popup.add_theme_color_override("font_color", _palette.title)
 
 	# Position above the score box
 	var score_global := _score_label.global_position
@@ -368,4 +461,22 @@ func _save_best_score(score: int) -> void:
 	var cfg := ConfigFile.new()
 	cfg.load(SAVE_PATH)  # OK if file doesn't exist yet; cfg stays empty
 	cfg.set_value(SAVE_SECTION, "best", score)
+	cfg.save(SAVE_PATH)
+
+
+func _load_dark_mode() -> bool:
+	var cfg := ConfigFile.new()
+	if cfg.load(SAVE_PATH) != OK:
+		# No saved preference — follow system setting
+		return DisplayServer.is_dark_mode()
+	if cfg.has_section_key("settings", "dark_mode"):
+		return bool(cfg.get_value("settings", "dark_mode", false))
+	# Key not saved yet — follow system setting
+	return DisplayServer.is_dark_mode()
+
+
+func _save_dark_mode(dark: bool) -> void:
+	var cfg := ConfigFile.new()
+	cfg.load(SAVE_PATH)
+	cfg.set_value("settings", "dark_mode", dark)
 	cfg.save(SAVE_PATH)
