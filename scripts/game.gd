@@ -294,11 +294,33 @@ func _on_tiles_moved() -> void:
 func _on_score_changed(delta: int) -> void:
 	_current_score += delta
 	_score_label.text = str(_current_score)
+	_show_score_popup(delta)
 	_sfx_merge.play()
 	if _current_score > _best_score:
 		_best_score = _current_score
 		_best_label.text = str(_best_score)
 		_save_best_score(_best_score)
+
+
+func _show_score_popup(delta: int) -> void:
+	var popup := Label.new()
+	popup.text = "+" + str(delta)
+	popup.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	popup.add_theme_font_size_override("font_size", 20)
+	popup.add_theme_color_override("font_color", C_TITLE)
+
+	# Position above the score box
+	var score_global := _score_label.global_position
+	popup.position = Vector2(score_global.x, score_global.y - 10)
+	popup.size = Vector2(_score_label.size.x, 28)
+	add_child(popup)
+
+	# Float up and fade out
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(popup, "position:y", popup.position.y - 30, 0.6).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUINT)
+	tw.tween_property(popup, "modulate:a", 0.0, 0.6).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
+	tw.chain().tween_callback(popup.queue_free)
 
 
 func _on_game_over() -> void:
