@@ -223,17 +223,17 @@ func _add_footer() -> void:
 	add_child(_sub_label)
 
 	_hint_label = Label.new()
-	_hint_label.text = "← → ↑ ↓  to move  ·  R  to restart"
+	_hint_label.text = "Swipe or arrow keys to move"
 	_hint_label.position = Vector2(SIDE_MARGIN, board_bottom + 42)
 	_hint_label.add_theme_font_size_override("font_size", 14)
 	add_child(_hint_label)
 
 	# Dark/light mode toggle — right side of footer
 	_toggle_btn = Button.new()
-	_toggle_btn.text = "🌙" if not _dark_mode else "☀️"
-	_toggle_btn.custom_minimum_size = Vector2(40, 32)
-	_toggle_btn.position = Vector2(SIDE_MARGIN + Board.BOARD_SIZE - 40, board_bottom + 16)
-	_toggle_btn.add_theme_font_size_override("font_size", 18)
+	_toggle_btn.text = "Light" if _dark_mode else "Dark"
+	_toggle_btn.custom_minimum_size = Vector2(52, 32)
+	_toggle_btn.position = Vector2(SIDE_MARGIN + Board.BOARD_SIZE - 52, board_bottom + 16)
+	_toggle_btn.add_theme_font_size_override("font_size", 16)
 	# Flat, borderless style
 	for state: String in ["normal", "hover", "pressed"]:
 		_toggle_btn.add_theme_stylebox_override(state, StyleBoxEmpty.new())
@@ -241,12 +241,12 @@ func _add_footer() -> void:
 	_toggle_btn.pressed.connect(_on_toggle_dark_mode)
 	add_child(_toggle_btn)
 
-	# Restart button — next to toggle
+	# Restart button — left of toggle
 	_restart_btn = Button.new()
-	_restart_btn.text = "↻"
-	_restart_btn.custom_minimum_size = Vector2(40, 32)
-	_restart_btn.position = Vector2(SIDE_MARGIN + Board.BOARD_SIZE - 84, board_bottom + 16)
-	_restart_btn.add_theme_font_size_override("font_size", 22)
+	_restart_btn.text = "New"
+	_restart_btn.custom_minimum_size = Vector2(42, 32)
+	_restart_btn.position = Vector2(SIDE_MARGIN + Board.BOARD_SIZE - 52 - 8 - 42, board_bottom + 16)
+	_restart_btn.add_theme_font_size_override("font_size", 16)
 	for state: String in ["normal", "hover", "pressed"]:
 		_restart_btn.add_theme_stylebox_override(state, StyleBoxEmpty.new())
 	_restart_btn.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
@@ -376,7 +376,7 @@ func _apply_palette() -> void:
 func _on_toggle_dark_mode() -> void:
 	_dark_mode = not _dark_mode
 	_palette   = PALETTE_DARK if _dark_mode else PALETTE_LIGHT
-	_toggle_btn.text = "☀️" if _dark_mode else "🌙"
+	_toggle_btn.text = "Light" if _dark_mode else "Dark"
 	_apply_palette()
 	_save_dark_mode(_dark_mode)
 
@@ -399,6 +399,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	# Handle touch events (native mobile)
 	if event is InputEventScreenTouch:
 		var touch := event as InputEventScreenTouch
 		if touch.pressed:
@@ -406,16 +407,33 @@ func _unhandled_input(event: InputEvent) -> void:
 			_is_touching = true
 		elif _is_touching:
 			_is_touching = false
-			if _overlay.visible:
-				return
-			var delta := touch.position - _touch_start
-			if delta.length() < SWIPE_MIN_DIST:
-				return
-			# Determine primary axis
-			if absf(delta.x) > absf(delta.y):
-				_board.move(Vector2i.RIGHT if delta.x > 0 else Vector2i.LEFT)
-			else:
-				_board.move(Vector2i.DOWN if delta.y > 0 else Vector2i.UP)
+			_try_swipe(touch.position)
+		return
+
+	# Handle mouse-button events (web exports deliver touch as mouse)
+	if event is InputEventMouseButton:
+		var mb := event as InputEventMouseButton
+		if mb.button_index != MOUSE_BUTTON_LEFT:
+			return
+		if mb.pressed:
+			_touch_start = mb.position
+			_is_touching = true
+		elif _is_touching:
+			_is_touching = false
+			_try_swipe(mb.position)
+
+
+func _try_swipe(end_pos: Vector2) -> void:
+	if _overlay.visible:
+		return
+	var delta := end_pos - _touch_start
+	if delta.length() < SWIPE_MIN_DIST:
+		return
+	# Determine primary axis
+	if absf(delta.x) > absf(delta.y):
+		_board.move(Vector2i.RIGHT if delta.x > 0 else Vector2i.LEFT)
+	else:
+		_board.move(Vector2i.DOWN if delta.y > 0 else Vector2i.UP)
 # ── Signal handlers ───────────────────────────────────────────────────────────
 
 func _on_tiles_moved() -> void:
