@@ -291,5 +291,6 @@ func _load_best_score() -> int:
 
 func _save_best_score(score: int) -> void:
 	var cfg := ConfigFile.new()
+	cfg.load(SAVE_PATH)  # OK if file doesn't exist yet; cfg stays empty
 	cfg.set_value(SAVE_SECTION, "best", score)
 	cfg.save(SAVE_PATH)
