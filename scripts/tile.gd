@@ -54,11 +54,13 @@ func _ready() -> void:
 
 	var panel := Panel.new()
 	panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.add_theme_stylebox_override("panel", _bg_style)
 	add_child(panel)
 
 	_label = Label.new()
 	_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_label.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
 	add_child(_label)

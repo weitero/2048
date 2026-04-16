@@ -99,6 +99,7 @@ func _ready() -> void:
 	_dark_mode  = _load_dark_mode()
 	_palette    = PALETTE_DARK if _dark_mode else PALETTE_LIGHT
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_apply_web_fixes()
 	_add_audio()
 	_add_background()
@@ -114,23 +115,8 @@ func _ready() -> void:
 
 func _apply_web_fixes() -> void:
 	if OS.has_feature("web") and ClassDB.class_exists("JavaScriptBridge"):
+		# Prevent swipe-to-scroll / pull-to-refresh exiting fullscreen on iOS Safari
 		var js_code := """
-		// 1. Audio unlock (iOS Safari starts WebAudio in suspended state)
-		const resumeAudio = () => {
-			if (typeof GodotAudio !== 'undefined' && GodotAudio.ctx && GodotAudio.ctx.state === 'suspended') {
-				GodotAudio.ctx.resume();
-			} else if (typeof Engine !== 'undefined' && Engine.Audio && Engine.Audio.ctx && Engine.Audio.ctx.state === 'suspended') {
-				Engine.Audio.ctx.resume();
-			}
-			['click', 'touchstart', 'touchend', 'keydown'].forEach(e => 
-				document.removeEventListener(e, resumeAudio)
-			);
-		};
-		['click', 'touchstart', 'touchend', 'keydown'].forEach(e => 
-			document.addEventListener(e, resumeAudio, { once: true })
-		);
-
-		// 2. Prevent swipe-to-scroll / pull-to-refresh exiting fullscreen on iOS Safari
 		document.addEventListener('touchmove', function(e) {
 			if (e.target.tagName === 'CANVAS') {
 				e.preventDefault();
@@ -160,6 +146,7 @@ func _make_sfx_player(path: String) -> AudioStreamPlayer:
 func _add_background() -> void:
 	_bg_rect = ColorRect.new()
 	_bg_rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_bg_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_bg_rect)
 
 
@@ -427,7 +414,16 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		_board.move(Vector2i.DOWN)
 
 
-func _input(event: InputEvent) -> void:
+var _audio_unlocked: bool = false
+
+func _unhandled_input(event: InputEvent) -> void:
+	# Ensure audio is un-suspended by Godot natively on first interaction
+	if not _audio_unlocked and (event is InputEventScreenTouch or event is InputEventMouseButton):
+		_audio_unlocked = true
+		_sfx_slide.volume_db = -80.0
+		_sfx_slide.play()
+		_sfx_slide.volume_db = 0.0
+
 	# Handle touch events (native mobile)
 	if event is InputEventScreenTouch:
 		var touch := event as InputEventScreenTouch
@@ -437,10 +433,6 @@ func _input(event: InputEvent) -> void:
 		elif _is_touching:
 			_is_touching = false
 			_try_swipe(touch.position)
-		get_viewport().set_input_as_handled()
-		return
-	elif event is InputEventScreenDrag:
-		get_viewport().set_input_as_handled()
 		return
 
 	# Handle mouse-button events (web exports deliver touch as mouse)
@@ -454,7 +446,6 @@ func _input(event: InputEvent) -> void:
 		elif _is_touching:
 			_is_touching = false
 			_try_swipe(mb.position)
-		get_viewport().set_input_as_handled()
 
 
 func _try_swipe(end_pos: Vector2) -> void:
