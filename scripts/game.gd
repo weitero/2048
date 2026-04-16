@@ -115,13 +115,38 @@ func _ready() -> void:
 
 func _apply_web_fixes() -> void:
 	if OS.has_feature("web") and ClassDB.class_exists("JavaScriptBridge"):
-		# Prevent swipe-to-scroll / pull-to-refresh exiting fullscreen on iOS Safari
 		var js_code := """
+		// 1. Prevent Safari swipe-to-scroll without breaking clicks
+		document.body.style.overflow = 'hidden';
 		document.addEventListener('touchmove', function(e) {
-			if (e.target.tagName === 'CANVAS') {
-				e.preventDefault();
-			}
+			if (e.target.tagName === 'CANVAS') e.preventDefault();
 		}, { passive: false });
+
+		// 2. Foolproof HTML-based audio unlocker for iOS Safari bypassing silent switch
+		const btn = document.createElement('button');
+		btn.innerHTML = 'Tap to Start';
+		btn.style.position = 'fixed';
+		btn.style.top = '0'; btn.style.left = '0';
+		btn.style.width = '100vw'; btn.style.height = '100vh';
+		btn.style.zIndex = '9999';
+		btn.style.background = 'rgba(0,0,0,0.85)';
+		btn.style.color = 'white';
+		btn.style.fontSize = '24px';
+		btn.style.border = 'none';
+		btn.style.fontFamily = 'sans-serif';
+		document.body.appendChild(btn);
+
+		btn.addEventListener('click', () => {
+			if (typeof Engine !== 'undefined' && Engine.Audio && Engine.Audio.ctx) {
+				Engine.Audio.ctx.resume();
+			}
+			
+			const silentAudio = document.createElement('audio');
+			silentAudio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+			silentAudio.play().catch(e => {});
+
+			btn.remove();
+		});
 		"""
 		var _res = JavaScriptBridge.eval(js_code)
 
@@ -414,16 +439,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		_board.move(Vector2i.DOWN)
 
 
-var _audio_unlocked: bool = false
-
 func _unhandled_input(event: InputEvent) -> void:
-	# Ensure audio is un-suspended by Godot natively on first interaction
-	if not _audio_unlocked and (event is InputEventScreenTouch or event is InputEventMouseButton):
-		_audio_unlocked = true
-		_sfx_slide.volume_db = -80.0
-		_sfx_slide.play()
-		_sfx_slide.volume_db = 0.0
-
 	# Handle touch events (native mobile)
 	if event is InputEventScreenTouch:
 		var touch := event as InputEventScreenTouch
