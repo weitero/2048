@@ -1,6 +1,6 @@
 # 2048 (Godot 4)
 
-A smooth, AI-assisted implementation of the classic 2048 puzzle game, built with **Godot 4.3**.
+A smooth, AI-assisted implementation of the classic 2048 puzzle game, built with **Godot 4.3**. Playable at: <https://weitero.itch.io/2048>
 
 ## Features
 
