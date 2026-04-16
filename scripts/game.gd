@@ -99,6 +99,7 @@ func _ready() -> void:
 	_dark_mode  = _load_dark_mode()
 	_palette    = PALETTE_DARK if _dark_mode else PALETTE_LIGHT
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_unlock_web_audio()
 	_add_audio()
 	_add_background()
 	_add_header()
@@ -109,6 +110,27 @@ func _ready() -> void:
 	# Sync best label now that _best_label node exists
 	if _best_score > 0:
 		_best_label.text = str(_best_score)
+
+
+func _unlock_web_audio() -> void:
+	if OS.has_feature("web") and ClassDB.class_exists("JavaScriptBridge"):
+		var js_code := """
+		const resumeAudio = () => {
+			if (typeof GodotAudio !== 'undefined' && GodotAudio.ctx && GodotAudio.ctx.state === 'suspended') {
+				GodotAudio.ctx.resume();
+			} else if (typeof Engine !== 'undefined' && Engine.Audio && Engine.Audio.ctx && Engine.Audio.ctx.state === 'suspended') {
+				Engine.Audio.ctx.resume();
+			}
+			['click', 'touchstart', 'touchend', 'keydown'].forEach(e => 
+				document.removeEventListener(e, resumeAudio)
+			);
+		};
+		['click', 'touchstart', 'touchend', 'keydown'].forEach(e => 
+			document.addEventListener(e, resumeAudio, { once: true })
+		);
+		"""
+		# Godot 4 uses JavaScriptBridge
+		var _res = JavaScriptBridge.eval(js_code)
 
 
 func _add_audio() -> void:
