@@ -99,7 +99,7 @@ func _ready() -> void:
 	_dark_mode  = _load_dark_mode()
 	_palette    = PALETTE_DARK if _dark_mode else PALETTE_LIGHT
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_unlock_web_audio()
+	_apply_web_fixes()
 	_add_audio()
 	_add_background()
 	_add_header()
@@ -112,9 +112,10 @@ func _ready() -> void:
 		_best_label.text = str(_best_score)
 
 
-func _unlock_web_audio() -> void:
+func _apply_web_fixes() -> void:
 	if OS.has_feature("web") and ClassDB.class_exists("JavaScriptBridge"):
 		var js_code := """
+		// 1. Audio unlock (iOS Safari starts WebAudio in suspended state)
 		const resumeAudio = () => {
 			if (typeof GodotAudio !== 'undefined' && GodotAudio.ctx && GodotAudio.ctx.state === 'suspended') {
 				GodotAudio.ctx.resume();
@@ -128,8 +129,14 @@ func _unlock_web_audio() -> void:
 		['click', 'touchstart', 'touchend', 'keydown'].forEach(e => 
 			document.addEventListener(e, resumeAudio, { once: true })
 		);
+
+		// 2. Prevent swipe-to-scroll / pull-to-refresh exiting fullscreen on iOS Safari
+		document.addEventListener('touchmove', function(e) {
+			if (e.target.tagName === 'CANVAS') {
+				e.preventDefault();
+			}
+		}, { passive: false });
 		"""
-		# Godot 4 uses JavaScriptBridge
 		var _res = JavaScriptBridge.eval(js_code)
 
 
@@ -430,6 +437,10 @@ func _input(event: InputEvent) -> void:
 		elif _is_touching:
 			_is_touching = false
 			_try_swipe(touch.position)
+		get_viewport().set_input_as_handled()
+		return
+	elif event is InputEventScreenDrag:
+		get_viewport().set_input_as_handled()
 		return
 
 	# Handle mouse-button events (web exports deliver touch as mouse)
@@ -443,6 +454,7 @@ func _input(event: InputEvent) -> void:
 		elif _is_touching:
 			_is_touching = false
 			_try_swipe(mb.position)
+		get_viewport().set_input_as_handled()
 
 
 func _try_swipe(end_pos: Vector2) -> void:
