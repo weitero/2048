@@ -279,6 +279,7 @@ func _add_footer() -> void:
 	for state: String in ["normal", "hover", "pressed"]:
 		_toggle_btn.add_theme_stylebox_override(state, StyleBoxEmpty.new())
 	_toggle_btn.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	_toggle_btn.focus_mode = Control.FOCUS_NONE
 	_toggle_btn.pressed.connect(_on_toggle_dark_mode)
 	add_child(_toggle_btn)
 
@@ -291,6 +292,7 @@ func _add_footer() -> void:
 	for state: String in ["normal", "hover", "pressed"]:
 		_restart_btn.add_theme_stylebox_override(state, StyleBoxEmpty.new())
 	_restart_btn.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	_restart_btn.focus_mode = Control.FOCUS_NONE
 	_restart_btn.pressed.connect(_on_restart_pressed)
 	add_child(_restart_btn)
 
