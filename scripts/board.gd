@@ -28,6 +28,7 @@ var _anim_gen:       int  = 0  # incremented on restart to cancel stale coroutin
 
 var _bg_style:       StyleBoxFlat
 var _slot_styles:    Array[StyleBoxFlat] = []
+var _current_theme_dict: Dictionary = {}
 
 
 func _ready() -> void:
@@ -89,12 +90,15 @@ func _cell_pixel_pos(gpos: Vector2i) -> Vector2:
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
-# Update board and cell slot colors (called by Game when theme changes)
-func apply_colors(board_bg: Color, cell_slot: Color) -> void:
+# Update board and cell slot colors, and push to all tiles
+func apply_theme(theme_dict: Dictionary) -> void:
+	_current_theme_dict = theme_dict
 	if _bg_style:
-		_bg_style.bg_color = board_bg
+		_bg_style.bg_color = theme_dict.get("board_bg", C_BOARD_BG)
 	for s in _slot_styles:
-		s.bg_color = cell_slot
+		s.bg_color = theme_dict.get("cell_slot", C_CELL_SLOT)
+	for tile: Tile in _tile_nodes.values():
+		tile.apply_theme(theme_dict)
 
 # Reset the board and spawn two starting tiles
 func start_game() -> void:
@@ -318,6 +322,8 @@ func _spawn_tile() -> void:
 	var tile: Tile = _tile_scene.instantiate()
 	tile.position = _cell_pixel_pos(pos)
 	add_child(tile)
+	if not _current_theme_dict.is_empty():
+		tile.apply_theme(_current_theme_dict)
 	tile.setup(val, pos)
 	tile.play_spawn()
 	_tile_nodes[pos] = tile

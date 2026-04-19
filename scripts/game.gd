@@ -11,45 +11,172 @@ const TOP_MARGIN  := 20
 const HEADER_H    := 80
 const BOARD_Y     := TOP_MARGIN + HEADER_H + 20  # 120
 
-# ── Color Palettes ────────────────────────────────────────────────────────────
-const PALETTE_LIGHT := {
-	"bg":          Color("#faf8ef"),
-	"title":       Color("#776e65"),
-	"subtitle":    Color("#776e65"),
-	"hint":        Color("#a09888"),
-	"score_bg":    Color("#bbada0"),
-	"score_lbl":   Color("#eee4da"),
-	"score_val":   Color("#ffffff"),
-	"overlay_dim": Color(0.737, 0.706, 0.627, 0.73),
-	"overlay_box": Color("#f9f6f2"),
-	"btn_normal":  Color("#8f7a66"),
-	"btn_hover":   Color("#9f8b77"),
-	"btn_pressed": Color("#7f6a56"),
-	"btn_text":    Color("#f9f6f2"),
-	"overlay_txt": Color("#776e65"),
-	"board_bg":    Color("#bbada0"),
-	"cell_slot":   Color("#cdc1b4"),
-	"toggle_text": Color("#a09888"),
-}
-
-const PALETTE_DARK := {
-	"bg":          Color("#1a1a2e"),
-	"title":       Color("#e8e0d8"),
-	"subtitle":    Color("#b0a8a0"),
-	"hint":        Color("#706868"),
-	"score_bg":    Color("#2a2a42"),
-	"score_lbl":   Color("#8080a0"),
-	"score_val":   Color("#f0f0f0"),
-	"overlay_dim": Color(0.06, 0.06, 0.12, 0.82),
-	"overlay_box": Color("#262640"),
-	"btn_normal":  Color("#4a4a6e"),
-	"btn_hover":   Color("#5a5a80"),
-	"btn_pressed": Color("#3a3a5e"),
-	"btn_text":    Color("#e8e0d8"),
-	"overlay_txt": Color("#e8e0d8"),
-	"board_bg":    Color("#2a2a42"),
-	"cell_slot":   Color("#363656"),
-	"toggle_text": Color("#706868"),
+# ── Color Palettes / Themes ───────────────────────────────────────────────────
+const THEMES := {
+	"Classic Light": {
+		"bg":          Color("#faf8ef"),
+		"title":       Color("#776e65"),
+		"subtitle":    Color("#776e65"),
+		"hint":        Color("#a09888"),
+		"score_bg":    Color("#bbada0"),
+		"score_lbl":   Color("#eee4da"),
+		"score_val":   Color("#ffffff"),
+		"overlay_dim": Color(0.737, 0.706, 0.627, 0.73),
+		"overlay_box": Color("#f9f6f2"),
+		"btn_normal":  Color("#8f7a66"),
+		"btn_hover":   Color("#9f8b77"),
+		"btn_pressed": Color("#7f6a56"),
+		"btn_text":    Color("#f9f6f2"),
+		"overlay_txt": Color("#776e65"),
+		"board_bg":    Color("#bbada0"),
+		"cell_slot":   Color("#cdc1b4"),
+		"toggle_text": Color("#a09888"),
+		"tiles": {
+			2:      Color("#eee4da"),
+			4:      Color("#ede0c8"),
+			8:      Color("#f2b179"),
+			16:     Color("#f59563"),
+			32:     Color("#f67c5f"),
+			64:     Color("#f65e3b"),
+			128:    Color("#edcf72"),
+			256:    Color("#edcc61"),
+			512:    Color("#edc850"),
+			1024:   Color("#edc53f"),
+			2048:   Color("#edc22e"),
+			4096:   Color("#b784ab"),
+			8192:   Color("#a566a0"),
+			16384:  Color("#934b95"),
+			32768:  Color("#6d35a0"),
+			65536:  Color("#4a1a8a"),
+			131072: Color("#2d0f5e"),
+		},
+		"dark_text":  Color("#776e65"),
+		"light_text": Color("#f9f6f2"),
+		"unknown_bg": Color("#3c3a32"),
+	},
+	"Classic Dark": {
+		"bg":          Color("#1a1a2e"),
+		"title":       Color("#e8e0d8"),
+		"subtitle":    Color("#b0a8a0"),
+		"hint":        Color("#706868"),
+		"score_bg":    Color("#2a2a42"),
+		"score_lbl":   Color("#8080a0"),
+		"score_val":   Color("#f0f0f0"),
+		"overlay_dim": Color(0.06, 0.06, 0.12, 0.82),
+		"overlay_box": Color("#262640"),
+		"btn_normal":  Color("#4a4a6e"),
+		"btn_hover":   Color("#5a5a80"),
+		"btn_pressed": Color("#3a3a5e"),
+		"btn_text":    Color("#e8e0d8"),
+		"overlay_txt": Color("#e8e0d8"),
+		"board_bg":    Color("#2a2a42"),
+		"cell_slot":   Color("#363656"),
+		"toggle_text": Color("#706868"),
+		"tiles": {
+			2:      Color("#eee4da"),
+			4:      Color("#ede0c8"),
+			8:      Color("#f2b179"),
+			16:     Color("#f59563"),
+			32:     Color("#f67c5f"),
+			64:     Color("#f65e3b"),
+			128:    Color("#edcf72"),
+			256:    Color("#edcc61"),
+			512:    Color("#edc850"),
+			1024:   Color("#edc53f"),
+			2048:   Color("#edc22e"),
+			4096:   Color("#b784ab"),
+			8192:   Color("#a566a0"),
+			16384:  Color("#934b95"),
+			32768:  Color("#6d35a0"),
+			65536:  Color("#4a1a8a"),
+			131072: Color("#2d0f5e"),
+		},
+		"dark_text":  Color("#776e65"),
+		"light_text": Color("#f9f6f2"),
+		"unknown_bg": Color("#3c3a32"),
+	},
+	"Fallout": {
+		"bg":          Color("#0a0f0a"),
+		"title":       Color("#18f50c"),
+		"subtitle":    Color("#18f50c"),
+		"hint":        Color("#12b809"),
+		"score_bg":    Color("#0a0f0a"),
+		"score_lbl":   Color("#18f50c"),
+		"score_val":   Color("#18f50c"),
+		"overlay_dim": Color(0.04, 0.06, 0.04, 0.82),
+		"overlay_box": Color("#0a0f0a"),
+		"btn_normal":  Color("#12b809"),
+		"btn_hover":   Color("#18f50c"),
+		"btn_pressed": Color("#0d8a07"),
+		"btn_text":    Color("#0a0f0a"),
+		"overlay_txt": Color("#18f50c"),
+		"board_bg":    Color("#0a0f0a"),
+		"cell_slot":   Color("#0f1f0f"),
+		"toggle_text": Color("#18f50c"),
+		"tiles": {
+			2:      Color("#0f2a0f"),
+			4:      Color("#133713"),
+			8:      Color("#174417"),
+			16:     Color("#1b511b"),
+			32:     Color("#1f5f1f"),
+			64:     Color("#236c23"),
+			128:    Color("#277927"),
+			256:    Color("#2b872b"),
+			512:    Color("#2f942f"),
+			1024:   Color("#33a133"),
+			2048:   Color("#37af37"),
+			4096:   Color("#3bbc3b"),
+			8192:   Color("#3fc93f"),
+			16384:  Color("#43d743"),
+			32768:  Color("#47e447"),
+			65536:  Color("#4bf14b"),
+			131072: Color("#4fff4f"),
+		},
+		"dark_text":  Color("#18f50c"),
+		"light_text": Color("#0a0f0a"),
+		"unknown_bg": Color("#0a0f0a"),
+	},
+	"Noir": {
+		"bg":          Color("#1a1a1a"),
+		"title":       Color("#f0f0f0"),
+		"subtitle":    Color("#cccccc"),
+		"hint":        Color("#888888"),
+		"score_bg":    Color("#333333"),
+		"score_lbl":   Color("#aaaaaa"),
+		"score_val":   Color("#ffffff"),
+		"overlay_dim": Color(0.1, 0.1, 0.1, 0.85),
+		"overlay_box": Color("#222222"),
+		"btn_normal":  Color("#444444"),
+		"btn_hover":   Color("#666666"),
+		"btn_pressed": Color("#222222"),
+		"btn_text":    Color("#ffffff"),
+		"overlay_txt": Color("#ffffff"),
+		"board_bg":    Color("#2a2a2a"),
+		"cell_slot":   Color("#3c3c3c"),
+		"toggle_text": Color("#aaaaaa"),
+		"tiles": {
+			2:      Color("#444444"),
+			4:      Color("#4f4f4f"),
+			8:      Color("#5b5b5b"),
+			16:     Color("#676767"),
+			32:     Color("#727272"),
+			64:     Color("#7e7e7e"),
+			128:    Color("#8a8a8a"),
+			256:    Color("#959595"),
+			512:    Color("#a1a1a1"),
+			1024:   Color("#adadad"),
+			2048:   Color("#b8b8b8"),
+			4096:   Color("#c4c4c4"),
+			8192:   Color("#d0d0d0"),
+			16384:  Color("#dbdbdb"),
+			32768:  Color("#e7e7e7"),
+			65536:  Color("#f3f3f3"),
+			131072: Color("#ffffff"),
+		},
+		"dark_text":  Color("#ffffff"),
+		"light_text": Color("#000000"),
+		"unknown_bg": Color("#222222"),
+	}
 }
 
 # ── Node refs ─────────────────────────────────────────────────────────────────
@@ -70,7 +197,7 @@ var _score_box_styles:  Array[StyleBoxFlat] = []
 var _score_lbl_labels:  Array[Label] = []   # "SCORE", "BEST" caption labels
 var _dim_rect:      ColorRect
 var _overlay_box_style: StyleBoxFlat
-var _toggle_btn:    Button
+var _theme_btn:     OptionButton
 var _restart_btn:   Button
 
 # ── Audio ─────────────────────────────────────────────────────────────────────
@@ -84,8 +211,8 @@ const SAVE_SECTION := "scores"
 
 var _current_score: int  = 0
 var _best_score:    int  = 0
-var _dark_mode:     bool = false
-var _palette:       Dictionary = PALETTE_LIGHT
+var _current_theme: String = "Classic Light"
+var _palette:       Dictionary = THEMES[_current_theme]
 
 # ── Touch / swipe ─────────────────────────────────────────────────────────────
 const SWIPE_MIN_DIST := 30.0  # minimum px distance to register a swipe
@@ -96,8 +223,8 @@ var _is_touching: bool = false
 func _ready() -> void:
 	DisplayServer.window_set_min_size(Vector2i(270, 360))  # half design resolution
 	_best_score = _load_best_score()
-	_dark_mode  = _load_dark_mode()
-	_palette    = PALETTE_DARK if _dark_mode else PALETTE_LIGHT
+	_current_theme = _load_theme()
+	_palette = THEMES[_current_theme]
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_apply_web_fixes()
@@ -269,25 +396,27 @@ func _add_footer() -> void:
 	_hint_label.add_theme_font_size_override("font_size", 14)
 	add_child(_hint_label)
 
-	# Dark/light mode toggle — right side of footer
-	_toggle_btn = Button.new()
-	_toggle_btn.text = "Light" if _dark_mode else "Dark"
-	_toggle_btn.custom_minimum_size = Vector2(52, 32)
-	_toggle_btn.position = Vector2(SIDE_MARGIN + Board.BOARD_SIZE - 52, board_bottom + 16)
-	_toggle_btn.add_theme_font_size_override("font_size", 16)
+	# Theme dropdown — right side of footer
+	_theme_btn = OptionButton.new()
+	for t in THEMES.keys():
+		_theme_btn.add_item(t)
+	_theme_btn.select(THEMES.keys().find(_current_theme))
+	_theme_btn.custom_minimum_size = Vector2(130, 32)
+	_theme_btn.position = Vector2(SIDE_MARGIN + Board.BOARD_SIZE - 130, board_bottom + 16)
+	_theme_btn.add_theme_font_size_override("font_size", 14)
 	# Flat, borderless style
 	for state: String in ["normal", "hover", "pressed"]:
-		_toggle_btn.add_theme_stylebox_override(state, StyleBoxEmpty.new())
-	_toggle_btn.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
-	_toggle_btn.focus_mode = Control.FOCUS_NONE
-	_toggle_btn.pressed.connect(_on_toggle_dark_mode)
-	add_child(_toggle_btn)
+		_theme_btn.add_theme_stylebox_override(state, StyleBoxEmpty.new())
+	_theme_btn.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	_theme_btn.focus_mode = Control.FOCUS_NONE
+	_theme_btn.item_selected.connect(_on_theme_selected)
+	add_child(_theme_btn)
 
 	# Restart button — left of toggle
 	_restart_btn = Button.new()
 	_restart_btn.text = "New"
 	_restart_btn.custom_minimum_size = Vector2(42, 32)
-	_restart_btn.position = Vector2(SIDE_MARGIN + Board.BOARD_SIZE - 52 - 8 - 42, board_bottom + 16)
+	_restart_btn.position = Vector2(SIDE_MARGIN + Board.BOARD_SIZE - 130 - 8 - 42, board_bottom + 16)
 	_restart_btn.add_theme_font_size_override("font_size", 16)
 	for state: String in ["normal", "hover", "pressed"]:
 		_restart_btn.add_theme_stylebox_override(state, StyleBoxEmpty.new())
@@ -400,7 +529,7 @@ func _apply_palette() -> void:
 
 	# Toggle & restart buttons
 	for color_name: String in ["font_color", "font_hover_color", "font_pressed_color"]:
-		_toggle_btn.add_theme_color_override(color_name, p.toggle_text)
+		_theme_btn.add_theme_color_override(color_name, p.toggle_text)
 		_restart_btn.add_theme_color_override(color_name, p.toggle_text)
 
 	# Overlay
@@ -413,15 +542,14 @@ func _apply_palette() -> void:
 	_style_button(_keep_playing_btn)
 
 	# Board
-	_board.apply_colors(p.board_bg, p.cell_slot)
+	_board.apply_theme(p)
 
 
-func _on_toggle_dark_mode() -> void:
-	_dark_mode = not _dark_mode
-	_palette   = PALETTE_DARK if _dark_mode else PALETTE_LIGHT
-	_toggle_btn.text = "Light" if _dark_mode else "Dark"
+func _on_theme_selected(index: int) -> void:
+	_current_theme = THEMES.keys()[index]
+	_palette = THEMES[_current_theme]
 	_apply_palette()
-	_save_dark_mode(_dark_mode)
+	_save_theme(_current_theme)
 
 
 # ── Input ─────────────────────────────────────────────────────────────────────
@@ -562,19 +690,19 @@ func _save_best_score(score: int) -> void:
 	cfg.save(SAVE_PATH)
 
 
-func _load_dark_mode() -> bool:
+func _load_theme() -> String:
 	var cfg := ConfigFile.new()
 	if cfg.load(SAVE_PATH) != OK:
-		# No saved preference — follow system setting
-		return DisplayServer.is_dark_mode()
+		return "Classic Dark" if DisplayServer.is_dark_mode() else "Classic Light"
+	if cfg.has_section_key("settings", "theme"):
+		return str(cfg.get_value("settings", "theme", "Classic Light"))
 	if cfg.has_section_key("settings", "dark_mode"):
-		return bool(cfg.get_value("settings", "dark_mode", false))
-	# Key not saved yet — follow system setting
-	return DisplayServer.is_dark_mode()
+		return "Classic Dark" if bool(cfg.get_value("settings", "dark_mode", false)) else "Classic Light"
+	return "Classic Dark" if DisplayServer.is_dark_mode() else "Classic Light"
 
 
-func _save_dark_mode(dark: bool) -> void:
+func _save_theme(theme_name: String) -> void:
 	var cfg := ConfigFile.new()
 	cfg.load(SAVE_PATH)
-	cfg.set_value("settings", "dark_mode", dark)
+	cfg.set_value("settings", "theme", theme_name)
 	cfg.save(SAVE_PATH)

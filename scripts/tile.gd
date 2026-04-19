@@ -7,30 +7,10 @@ extends Control
 # Must stay in sync with Board.CELL_SIZE
 const CELL_SIZE := 107
 
-# Classic 2048 color palette + super-tile colors
-const TILE_COLORS: Dictionary = {
-	2:     Color("#eee4da"),
-	4:     Color("#ede0c8"),
-	8:     Color("#f2b179"),
-	16:    Color("#f59563"),
-	32:    Color("#f67c5f"),
-	64:    Color("#f65e3b"),
-	128:   Color("#edcf72"),
-	256:   Color("#edcc61"),
-	512:   Color("#edc850"),
-	1024:  Color("#edc53f"),
-	2048:  Color("#edc22e"),
-	4096:  Color("#b784ab"),
-	8192:  Color("#a566a0"),
-	16384: Color("#934b95"),
-	32768: Color("#6d35a0"),
-	65536: Color("#4a1a8a"),
-	131072: Color("#2d0f5e"),
-}
-
-const C_DARK_TEXT  := Color("#776e65")  # used for values 2 and 4
-const C_LIGHT_TEXT := Color("#f9f6f2")  # used for 8 and above
-const C_UNKNOWN_BG := Color("#3c3a32")  # fallback for values > 2048
+var _theme_tiles: Dictionary = {}
+var _theme_dark_text: Color = Color.WHITE
+var _theme_light_text: Color = Color.WHITE
+var _theme_unknown_bg: Color = Color.BLACK
 
 var value: int = 0
 var grid_pos: Vector2i = Vector2i.ZERO
@@ -50,7 +30,7 @@ func _ready() -> void:
 	_bg_style.corner_radius_top_right   = 6
 	_bg_style.corner_radius_bottom_left = 6
 	_bg_style.corner_radius_bottom_right = 6
-	_bg_style.bg_color = C_UNKNOWN_BG
+	_bg_style.bg_color = _theme_unknown_bg
 
 	var panel := Panel.new()
 	panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -79,11 +59,20 @@ func setup(v: int, gpos: Vector2i) -> void:
 		_update_visuals()
 
 
+func apply_theme(theme_dict: Dictionary) -> void:
+	_theme_tiles = theme_dict.get("tiles", {})
+	_theme_dark_text = theme_dict.get("dark_text", Color.WHITE)
+	_theme_light_text = theme_dict.get("light_text", Color.WHITE)
+	_theme_unknown_bg = theme_dict.get("unknown_bg", Color.BLACK)
+	if _label != null:
+		_update_visuals()
+
+
 func _update_visuals() -> void:
-	_bg_style.bg_color = TILE_COLORS.get(value, C_UNKNOWN_BG)
+	_bg_style.bg_color = _theme_tiles.get(value, _theme_unknown_bg)
 	_label.text = str(value)
 	_label.add_theme_color_override("font_color",
-		C_DARK_TEXT if value <= 4 else C_LIGHT_TEXT)
+		_theme_dark_text if value <= 4 else _theme_light_text)
 	_label.add_theme_font_size_override("font_size", _font_size_for(value))
 
 
