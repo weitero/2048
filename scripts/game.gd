@@ -495,7 +495,6 @@ func _add_post_processing() -> void:
 	_post_process_rect.visible = false
 	
 	var mat := ShaderMaterial.new()
-	mat.shader = load("res://shaders/noir_filter.gdshader")
 	_post_process_rect.material = mat
 	add_child(_post_process_rect)
 
@@ -561,7 +560,15 @@ func _apply_palette() -> void:
 	_board.apply_theme(p)
 
 	if _post_process_rect:
-		_post_process_rect.visible = (_current_theme == "Noir")
+		var mat = _post_process_rect.material as ShaderMaterial
+		if _current_theme == "Noir":
+			mat.shader = load("res://shaders/noir_filter.gdshader")
+			_post_process_rect.visible = true
+		elif _current_theme == "Fallout":
+			mat.shader = load("res://shaders/fallout_filter.gdshader")
+			_post_process_rect.visible = true
+		else:
+			_post_process_rect.visible = false
 
 
 func _on_theme_selected(index: int) -> void:
