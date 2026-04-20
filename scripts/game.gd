@@ -137,45 +137,46 @@ const THEMES := {
 		"unknown_bg": Color("#0a0f0a"),
 	},
 	"Noir": {
-		"bg":          Color("#1a1a1a"),
-		"title":       Color("#f0f0f0"),
-		"subtitle":    Color("#cccccc"),
-		"hint":        Color("#888888"),
-		"score_bg":    Color("#333333"),
-		"score_lbl":   Color("#aaaaaa"),
+		"bg":          Color("#050505"),
+		"title":       Color("#ffffff"),
+		"subtitle":    Color("#dddddd"),
+		"hint":        Color("#aaaaaa"),
+		"score_bg":    Color("#1a1a1a"),
+		"score_lbl":   Color("#cccccc"),
 		"score_val":   Color("#ffffff"),
-		"overlay_dim": Color(0.1, 0.1, 0.1, 0.85),
-		"overlay_box": Color("#222222"),
-		"btn_normal":  Color("#444444"),
-		"btn_hover":   Color("#666666"),
-		"btn_pressed": Color("#222222"),
+		"overlay_dim": Color(0.05, 0.05, 0.05, 0.85),
+		"overlay_box": Color("#111111"),
+		"btn_normal":  Color("#222222"),
+		"btn_hover":   Color("#444444"),
+		"btn_pressed": Color("#111111"),
 		"btn_text":    Color("#ffffff"),
 		"overlay_txt": Color("#ffffff"),
-		"board_bg":    Color("#2a2a2a"),
-		"cell_slot":   Color("#3c3c3c"),
-		"toggle_text": Color("#aaaaaa"),
+		"board_bg":    Color("#111111"),
+		"cell_slot":   Color("#1c1c1c"),
+		"toggle_text": Color("#cccccc"),
 		"tiles": {
-			2:      Color("#444444"),
-			4:      Color("#4f4f4f"),
-			8:      Color("#5b5b5b"),
-			16:     Color("#676767"),
-			32:     Color("#727272"),
-			64:     Color("#7e7e7e"),
-			128:    Color("#8a8a8a"),
-			256:    Color("#959595"),
-			512:    Color("#a1a1a1"),
-			1024:   Color("#adadad"),
-			2048:   Color("#b8b8b8"),
-			4096:   Color("#c4c4c4"),
-			8192:   Color("#d0d0d0"),
-			16384:  Color("#dbdbdb"),
-			32768:  Color("#e7e7e7"),
-			65536:  Color("#f3f3f3"),
+			2:      Color("#000000"),
+			4:      Color("#0a0a0a"),
+			8:      Color("#161616"),
+			16:     Color("#242424"),
+			32:     Color("#363636"),
+			64:     Color("#4a4a4a"),
+			128:    Color("#626262"),
+			256:    Color("#7c7c7c"),
+			512:    Color("#999999"),
+			1024:   Color("#b5b5b5"),
+			2048:   Color("#d4d4d4"),
+			4096:   Color("#f4f0ec"),
+			8192:   Color("#f6f3f0"),
+			16384:  Color("#f8f6f4"),
+			32768:  Color("#faf9f7"),
+			65536:  Color("#fdfcfb"),
 			131072: Color("#ffffff"),
 		},
 		"dark_text":  Color("#ffffff"),
 		"light_text": Color("#000000"),
-		"unknown_bg": Color("#222222"),
+		"unknown_bg": Color("#111111"),
+		"light_text_threshold": 64,
 	}
 }
 
@@ -199,6 +200,7 @@ var _dim_rect:      ColorRect
 var _overlay_box_style: StyleBoxFlat
 var _theme_btn:     OptionButton
 var _restart_btn:   Button
+var _post_process_rect: ColorRect
 
 # ── Audio ─────────────────────────────────────────────────────────────────────
 var _sfx_slide:     AudioStreamPlayer
@@ -234,6 +236,7 @@ func _ready() -> void:
 	_add_board()
 	_add_footer()
 	_add_overlay()
+	_add_post_processing()
 	_apply_palette()
 	# Sync best label now that _best_label node exists
 	if _best_score > 0:
@@ -484,6 +487,19 @@ func _add_overlay() -> void:
 	btn_row.add_child(_overlay_btn)
 
 
+func _add_post_processing() -> void:
+	_post_process_rect = ColorRect.new()
+	_post_process_rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_post_process_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_post_process_rect.z_index = 100
+	_post_process_rect.visible = false
+	
+	var mat := ShaderMaterial.new()
+	mat.shader = load("res://shaders/noir_filter.gdshader")
+	_post_process_rect.material = mat
+	add_child(_post_process_rect)
+
+
 func _style_button(btn: Button) -> void:
 	var p := _palette
 	for state: String in ["normal", "hover", "pressed"]:
@@ -543,6 +559,9 @@ func _apply_palette() -> void:
 
 	# Board
 	_board.apply_theme(p)
+
+	if _post_process_rect:
+		_post_process_rect.visible = (_current_theme == "Noir")
 
 
 func _on_theme_selected(index: int) -> void:

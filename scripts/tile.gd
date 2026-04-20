@@ -11,6 +11,7 @@ var _theme_tiles: Dictionary = {}
 var _theme_dark_text: Color = Color.WHITE
 var _theme_light_text: Color = Color.WHITE
 var _theme_unknown_bg: Color = Color.BLACK
+var _theme_light_text_threshold: int = 4
 
 var value: int = 0
 var grid_pos: Vector2i = Vector2i.ZERO
@@ -64,6 +65,7 @@ func apply_theme(theme_dict: Dictionary) -> void:
 	_theme_dark_text = theme_dict.get("dark_text", Color.WHITE)
 	_theme_light_text = theme_dict.get("light_text", Color.WHITE)
 	_theme_unknown_bg = theme_dict.get("unknown_bg", Color.BLACK)
+	_theme_light_text_threshold = theme_dict.get("light_text_threshold", 4)
 	if _label != null:
 		_update_visuals()
 
@@ -72,7 +74,7 @@ func _update_visuals() -> void:
 	_bg_style.bg_color = _theme_tiles.get(value, _theme_unknown_bg)
 	_label.text = str(value)
 	_label.add_theme_color_override("font_color",
-		_theme_dark_text if value <= 4 else _theme_light_text)
+		_theme_dark_text if value <= _theme_light_text_threshold else _theme_light_text)
 	_label.add_theme_font_size_override("font_size", _font_size_for(value))
 
 
