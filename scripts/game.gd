@@ -441,29 +441,31 @@ func _add_footer() -> void:
 	_hint_label.add_theme_font_size_override("font_size", 14)
 	add_child(_hint_label)
 
-	# Theme dropdown — right side of footer
+	# Footer Buttons Container
+	var btn_row := HBoxContainer.new()
+	btn_row.position = Vector2(SIDE_MARGIN, board_bottom + 16)
+	btn_row.size = Vector2(Board.BOARD_SIZE, 32)
+	btn_row.alignment = BoxContainer.ALIGNMENT_END
+	btn_row.add_theme_constant_override("separation", 12)
+	add_child(btn_row)
+
+	# Restart button
+	_restart_btn = Button.new()
+	_restart_btn.text = "New"
+	_restart_btn.add_theme_font_size_override("font_size", 16)
+	_restart_btn.focus_mode = Control.FOCUS_NONE
+	_restart_btn.pressed.connect(_on_restart_pressed)
+	btn_row.add_child(_restart_btn)
+
+	# Theme dropdown
 	_theme_btn = OptionButton.new()
 	for t in THEMES.keys():
 		_theme_btn.add_item(t)
 	_theme_btn.select(THEMES.keys().find(_current_theme))
-	_theme_btn.custom_minimum_size = Vector2(130, 32)
-	_theme_btn.position = Vector2(SIDE_MARGIN + Board.BOARD_SIZE - 130, board_bottom + 16)
 	_theme_btn.add_theme_font_size_override("font_size", 14)
-
 	_theme_btn.focus_mode = Control.FOCUS_NONE
 	_theme_btn.item_selected.connect(_on_theme_selected)
-	add_child(_theme_btn)
-
-	# Restart button — left of toggle
-	_restart_btn = Button.new()
-	_restart_btn.text = "New"
-	_restart_btn.custom_minimum_size = Vector2(42, 32)
-	_restart_btn.position = Vector2(SIDE_MARGIN + Board.BOARD_SIZE - 130 - 8 - 42, board_bottom + 16)
-	_restart_btn.add_theme_font_size_override("font_size", 16)
-
-	_restart_btn.focus_mode = Control.FOCUS_NONE
-	_restart_btn.pressed.connect(_on_restart_pressed)
-	add_child(_restart_btn)
+	btn_row.add_child(_theme_btn)
 
 
 func _add_overlay() -> void:
@@ -548,6 +550,10 @@ func _style_button(btn: Button) -> void:
 		s.corner_radius_top_right    = 4
 		s.corner_radius_bottom_left  = 4
 		s.corner_radius_bottom_right = 4
+		s.content_margin_left = 16
+		s.content_margin_right = 16
+		s.content_margin_top = 6
+		s.content_margin_bottom = 6
 		btn.add_theme_stylebox_override(state, s)
 	# Remove focus highlight ring
 	btn.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
