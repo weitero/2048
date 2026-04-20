@@ -407,10 +407,7 @@ func _add_footer() -> void:
 	_theme_btn.custom_minimum_size = Vector2(130, 32)
 	_theme_btn.position = Vector2(SIDE_MARGIN + Board.BOARD_SIZE - 130, board_bottom + 16)
 	_theme_btn.add_theme_font_size_override("font_size", 14)
-	# Flat, borderless style
-	for state: String in ["normal", "hover", "pressed"]:
-		_theme_btn.add_theme_stylebox_override(state, StyleBoxEmpty.new())
-	_theme_btn.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+
 	_theme_btn.focus_mode = Control.FOCUS_NONE
 	_theme_btn.item_selected.connect(_on_theme_selected)
 	add_child(_theme_btn)
@@ -421,9 +418,7 @@ func _add_footer() -> void:
 	_restart_btn.custom_minimum_size = Vector2(42, 32)
 	_restart_btn.position = Vector2(SIDE_MARGIN + Board.BOARD_SIZE - 130 - 8 - 42, board_bottom + 16)
 	_restart_btn.add_theme_font_size_override("font_size", 16)
-	for state: String in ["normal", "hover", "pressed"]:
-		_restart_btn.add_theme_stylebox_override(state, StyleBoxEmpty.new())
-	_restart_btn.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+
 	_restart_btn.focus_mode = Control.FOCUS_NONE
 	_restart_btn.pressed.connect(_on_restart_pressed)
 	add_child(_restart_btn)
@@ -543,9 +538,8 @@ func _apply_palette() -> void:
 	_hint_label.add_theme_color_override("font_color", p.hint)
 
 	# Toggle & restart buttons
-	for color_name: String in ["font_color", "font_hover_color", "font_pressed_color"]:
-		_theme_btn.add_theme_color_override(color_name, p.toggle_text)
-		_restart_btn.add_theme_color_override(color_name, p.toggle_text)
+	_style_button(_theme_btn)
+	_style_button(_restart_btn)
 
 	# Overlay
 	_dim_rect.color = p.overlay_dim
