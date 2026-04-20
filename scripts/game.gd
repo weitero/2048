@@ -436,7 +436,7 @@ func _add_footer() -> void:
 	add_child(_sub_label)
 
 	_hint_label = Label.new()
-	_hint_label.text = "Swipe or arrow keys to move"
+	_hint_label.text = "Swipe, WASD/Arrow keys to move"
 	_hint_label.position = Vector2(SIDE_MARGIN, board_bottom + 42)
 	_hint_label.add_theme_font_size_override("font_size", 14)
 	add_child(_hint_label)
@@ -625,15 +625,21 @@ func _on_theme_selected(index: int) -> void:
 func _unhandled_key_input(event: InputEvent) -> void:
 	if _overlay.visible:
 		return
+
+	var is_d = event is InputEventKey and event.is_pressed() and not event.is_echo() and event.keycode == KEY_D
+	var is_a = event is InputEventKey and event.is_pressed() and not event.is_echo() and event.keycode == KEY_A
+	var is_w = event is InputEventKey and event.is_pressed() and not event.is_echo() and event.keycode == KEY_W
+	var is_s = event is InputEventKey and event.is_pressed() and not event.is_echo() and event.keycode == KEY_S
+
 	if event.is_action_pressed("restart"):
 		_restart()
-	elif event.is_action_pressed("ui_right"):
+	elif event.is_action_pressed("ui_right") or is_d:
 		_board.move(Vector2i.RIGHT)
-	elif event.is_action_pressed("ui_left"):
+	elif event.is_action_pressed("ui_left") or is_a:
 		_board.move(Vector2i.LEFT)
-	elif event.is_action_pressed("ui_up"):
+	elif event.is_action_pressed("ui_up") or is_w:
 		_board.move(Vector2i.UP)
-	elif event.is_action_pressed("ui_down"):
+	elif event.is_action_pressed("ui_down") or is_s:
 		_board.move(Vector2i.DOWN)
 
 
